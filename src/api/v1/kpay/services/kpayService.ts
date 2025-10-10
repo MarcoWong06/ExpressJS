@@ -1,4 +1,5 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
+import type { AxiosError } from "axios";
 import type { KPayApiResponse } from "../types";
 import type { CreateAllHostedCheckoutOrderRequest } from "../types/allHostedCheckoutOrderRequest";
 import { CONFIG } from "../config/constants";
@@ -51,7 +52,7 @@ export class KPayService {
         throw error;
       }
 
-      if (axios.isAxiosError(error)) {
+      if (axios.isAxiosError<AxiosError>(error)) {
         const axiosError = error as AxiosError;
         throw new KPayApiError(
           `API request failed: ${axiosError.message}`,

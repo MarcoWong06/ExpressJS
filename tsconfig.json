@@ -2,9 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "lib": [
-      "ES2022"
-    ],
+    "lib": ["ES2022"],
     "outDir": "./build",
     "rootDir": "./src",
     "strict": true,
@@ -22,12 +20,6 @@
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node"
   },
-  "include": [
-    "src/**/*"
-, "../components/src/api"  ],
-  "exclude": [
-    "node_modules",
-    "bin",
-    "**/*.test.ts"
-  ]
+  "include": ["src/**/*", "../components/src/api"],
+  "exclude": ["node_modules", "bin", "**/*.test.ts"]
 }
