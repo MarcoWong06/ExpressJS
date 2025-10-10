@@ -1,0 +1,18 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "workbench.list.openMode": "doubleClick",
+        "files.exclude": {
+            // ".*": true,
+            // "BRANCHES": true,
+            // "TAGS": true,
+            // "TRUNK": true,
+        },
+        "git.useIntegratedAskPass": true,
+        "github.gitAuthentication": true
+    }
+}
