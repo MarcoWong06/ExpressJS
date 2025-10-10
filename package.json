@@ -9,9 +9,7 @@
     "node": ">=20.19.0"
   },    
   "config": {
-    "port": 5000,
-    "dockerfile": "./docker-build.dockerfile",
-    "stackFile": "./docker-stack.yml"
+    "port": 5000
   },
   "scripts": {
     "start": "cross-env PORT=${npm_package_config_port} CHOKIDAR_USEPOLLING=true CHOKIDAR_INTERVAL=1000 tsx watch src/server-index.ts",
