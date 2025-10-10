@@ -35,7 +35,8 @@ const createOrderRequestBody = (
     {
       itemNo: body.itemNo,
       itemName: body.itemName,
-      price: body.payAmount,
+      itemIcon: body.itemIcon,
+      price: body.payAmount + (body.discountAmount || 0),
       priceCurrency: CONFIG.DEFAULTS.CURRENCY,
       quantity: body.quantity,
     },

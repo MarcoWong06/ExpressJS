@@ -56,7 +56,7 @@ Creates a new hosted checkout order and returns a secure checkout URL.
   kpayApiKey: string,                        // RSA private key for signature
   merchantIcon: string | null,               // Merchant icon URL
   merchantCode: string,                      // KPay merchant code
-  payAmount: number,                         // Payment amount (positive number)
+  payAmount: number,                         // Exact payment amount (positive number)
   discountAmount: number | null,             // Discount amount (optional)
   notifyUrl: string | null,                  // Payment notification URL
   returnUrl: string | null,                  // Return URL after payment

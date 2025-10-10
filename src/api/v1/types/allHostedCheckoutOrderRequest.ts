@@ -4,6 +4,7 @@ import { PageFeatureControl } from "./kpayApi";
 export interface OrderItem {
   itemNo: string;
   itemName: string;
+  itemIcon: string | null;
   price: number;
   priceCurrency: string;
   quantity: number;
