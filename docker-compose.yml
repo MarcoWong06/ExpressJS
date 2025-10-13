@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: ./dockerfiles/build.dockerfile
-    image: cityray/cap-cws/kpay:latest
+    image: cap-cws/kpay:latest
 
     ports:
       - "5000:5000"
