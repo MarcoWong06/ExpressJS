@@ -1,38 +1,37 @@
 import { Language } from "./kpayApi";
 
-export interface AllHostedCheckoutOrderRequestBody {
+export interface OrderRequestMetaData {
   language: Language;
   kpayApiKey: string;
-  merchantIcon: string | null;
   merchantCode: string;
   payAmount: number;
-  discountAmount: number | null;
-  notifyUrl: string | null;
-  returnUrl: string | null;
-  orderRemark: string | null;
   itemNo: string;
   itemName: string;
-  itemIcon: string | null;
   quantity: number;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  phone: string | null;
+}
+export interface OrderRequestDataContent {
+  kpayApiUrl?: string;
+  kpayApiCreateAllHostedCheckoutOrderEndpoint?: string;
+  kpayApiGenerateAllHostedCheckoutOrderEndpoint?: string;
+  merchantIcon?: string;
+  discountAmount?: number;
+  notifyUrl?: string;
+  returnUrl?: string;
+  orderRemark?: string;
+  itemIcon?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
 }
 
-export interface AllHostedCheckoutOrderResponse {
-  message?: string;
+export interface OrderResponseDataContent {
   checkoutUrl?: string;
-  error?: string;
 }
 
-export interface KPayApiResponse {
-  code: number | string;
-  message?: string;
-  data?: {
-    managedOrderNo: string;
-  };
-}
+export interface OrderRequest extends ResultObject<OrderRequestDataContent, OrderRequestMetaData> {}
+
+export interface OrderResponse extends ResultObject<OrderResponseDataContent> {}
 
 export interface SignatureParams {
   requestMethod: string;

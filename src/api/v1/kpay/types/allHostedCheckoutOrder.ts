@@ -4,21 +4,21 @@ import { PageFeatureControl } from "./kpayApi";
 export interface OrderItem {
   itemNo: string;
   itemName: string;
-  itemIcon: string | null;
+  itemIcon?: string | null;
   price: number;
   priceCurrency: string;
   quantity: number;
 }
 
 export interface PaymentEnvironmentInfo {
-  browser: string | null;
-  ipAddress: string | null;
+  browser?: string;
+  ipAddress?: string;
   copyFlag: boolean;
-  timeZone: number | null;
-  language: string | null;
-  webSite: string | null;
-  screenWidth: number | null;
-  screenHeight: number | null;
+  timeZone?: number;
+  language?: string;
+  webSite?: string;
+  screenWidth?: number;
+  screenHeight?: number;
 }
 
 export interface DeliveryInfo {
@@ -44,17 +44,25 @@ export interface BillInfo {
 }
 
 export interface CreateAllHostedCheckoutOrderRequest {
-  merchantIcon: string | null;
+  merchantIcon?: string | null;
   managedOutTradeNo: string;
   payAmount: number;
   payCurrency: string;
-  discountAmount: number | null;
-  notifyUrl: string | null;
-  returnUrl: string | null;
-  orderRemark: string | null;
+  discountAmount?: number | null;
+  notifyUrl?: string | null;
+  returnUrl?: string | null;
+  orderRemark?: string | null;
   pageFeatureControls?: PageFeatureControl[];
   itemList: OrderItem[];
   paymentEnvironmentInfo?: PaymentEnvironmentInfo;
   deliveryInfo?: DeliveryInfo;
   billInfo?: BillInfo;
+}
+
+export interface CreateAllHostedCheckoutOrderResponse {
+  code: number | string;
+  message?: string;
+  data?: {
+    managedOrderNo: string;
+  };
 }
