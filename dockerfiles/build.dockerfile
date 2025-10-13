@@ -1,7 +1,7 @@
 FROM node:lts-slim AS builder
 
 # Upgrade system packages to address vulnerabilities
-RUN apt-get update
+# RUN apt-get update
 
 WORKDIR /nodeApp
 COPY ./package.json .
