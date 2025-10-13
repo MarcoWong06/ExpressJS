@@ -1,9 +1,6 @@
 import express, { Request, Response } from "express";
-import type {
-  AllHostedCheckoutOrderRequestBody,
-  AllHostedCheckoutOrderResponse,
-} from "../types";
-import { CreateAllHostedCheckoutOrderRequest } from "../types/allHostedCheckoutOrderRequest";
+import type { OrderRequest, OrderResponse } from "../types";
+import { CreateAllHostedCheckoutOrderRequest } from "../types/allHostedCheckoutOrder";
 import {
   generateSignature,
   generateTimestampAndNonce,
@@ -18,45 +15,54 @@ import {
 import { CONFIG } from "../config/constants";
 
 const router = express.Router();
-const kpayService = new KPayService();
 
 const createOrderRequestBody = (
-  body: AllHostedCheckoutOrderRequestBody
+  body: OrderRequest
 ): CreateAllHostedCheckoutOrderRequest => ({
-  merchantIcon: body.merchantIcon,
+  merchantIcon: body.dataContent?.merchantIcon || null,
   managedOutTradeNo: `order_${Date.now()}`,
-  payAmount: body.payAmount,
+  payAmount: body.metaData.payAmount,
   payCurrency: CONFIG.DEFAULTS.CURRENCY,
-  discountAmount: body.discountAmount,
-  notifyUrl: body.notifyUrl,
-  returnUrl: body.returnUrl,
-  orderRemark: body.orderRemark,
+  discountAmount: body.dataContent?.discountAmount || null,
+  notifyUrl: body.dataContent?.notifyUrl || null,
+  returnUrl: body.dataContent?.returnUrl || null,
+  orderRemark: body.dataContent?.orderRemark || null,
   itemList: [
     {
-      itemNo: body.itemNo,
-      itemName: body.itemName,
-      itemIcon: body.itemIcon,
-      price: body.payAmount + (body.discountAmount || 0),
+      itemNo: body.metaData.itemNo,
+      itemName: body.metaData.itemName,
+      itemIcon: body.dataContent?.itemIcon || null,
+      price: body.metaData.payAmount + (body.dataContent?.discountAmount || 0),
       priceCurrency: CONFIG.DEFAULTS.CURRENCY,
-      quantity: body.quantity,
+      quantity: body.metaData.quantity,
     },
   ],
 });
 
 router.post(
   "/",
-  async (
-    req: Request<AllHostedCheckoutOrderRequestBody>,
-    res: Response<AllHostedCheckoutOrderResponse>
-  ) => {
+  async (req: Request<OrderRequest>, res: Response<OrderResponse>) => {
     try {
       // Validate request body
       validateOrderRequest(req.body);
+
+      const dataContent = req.body.dataContent || {};
+      const metaData = req.body.metaData || {};
 
       // Create order request
       const orderRequest = createOrderRequestBody(req.body);
       const { timestamp, nonceStr } = generateTimestampAndNonce();
       const bodyString = JSON.stringify(orderRequest);
+      const baseURL = dataContent.kpayApiUrl ?? CONFIG.API.BASE_URL;
+      const createOrderEndpoint =
+        dataContent.kpayApiCreateAllHostedCheckoutOrderEndpoint ??
+        CONFIG.API.ENDPOINTS.CREATE_ALL_HOSTED_CHECKOUT_ORDER;
+      const generateOrderEndpoint =
+        dataContent.kpayApiGenerateAllHostedCheckoutOrderEndpoint ??
+        CONFIG.API.ENDPOINTS.GENERATE_ALL_HOSTED_CHECKOUT_ORDER;
+      const language = metaData.language;
+      const kpayApiKey = metaData.kpayApiKey;
+      const merchantCode = metaData.merchantCode;
 
       // Generate signature for order creation
       const signature = generateSignature(
@@ -64,23 +70,24 @@ router.post(
           requestMethod: "POST",
           requestUri: CONFIG.API.ENDPOINTS.CREATE_ALL_HOSTED_CHECKOUT_ORDER,
           body: bodyString,
-          merchantCode: req.body.merchantCode,
+          merchantCode,
           timestamp,
           nonceStr,
         },
-        req.body.kpayApiKey
+        kpayApiKey
       );
 
       // Create API headers
       const headers = createApiHeaders({
-        MerchantCode: req.body.merchantCode,
+        MerchantCode: merchantCode,
         NonceStr: nonceStr,
         Timestamp: timestamp.toString(),
         Signature: signature,
-        Language: req.body.language,
+        Language: language,
       });
 
       // Create order via KPay API
+      const kpayService = new KPayService(baseURL, createOrderEndpoint);
       const apiResponse = await kpayService.createOrder(orderRequest, headers);
       if (
         !CONFIG.API.SUCCESS_CODES.includes(apiResponse.code) ||
@@ -101,52 +108,60 @@ router.post(
       const checkoutSignature = generateSignature(
         {
           requestMethod: "GET",
-          requestUri: `${CONFIG.API.ENDPOINTS.GENERATE_ALL_HOSTED_CHECKOUT_ORDER}?managedOrderNo=${managedOrderNo}&K-Merchant-Code=${req.body.merchantCode}&K-Nonce-Str=${newNonceStr}&K-Timestamp=${newTimestamp}`,
+          requestUri: `${generateOrderEndpoint}?managedOrderNo=${managedOrderNo}&language=${language}&K-Merchant-Code=${merchantCode}&K-Nonce-Str=${newNonceStr}&K-Timestamp=${newTimestamp}`,
           body: "",
-          merchantCode: req.body.merchantCode,
+          merchantCode,
           timestamp: newTimestamp,
           nonceStr: newNonceStr,
         },
-        req.body.kpayApiKey
+        kpayApiKey
       );
+      
 
       // Create checkout URL
       const checkoutUrl = createCheckoutUrl(
-        `${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.GENERATE_ALL_HOSTED_CHECKOUT_ORDER}`,
+        `${baseURL}${generateOrderEndpoint}`,
         managedOrderNo,
-        req.body.merchantCode,
+        language,
+        merchantCode,
         newNonceStr,
         newTimestamp,
         checkoutSignature
       );
 
       res.status(200).json({
-        message: "Hosted checkout order created successfully",
-        checkoutUrl,
+        resultType: "SUCCESS",
+        resultMessage: "Hosted checkout order created successfully",
+        dataContent: {
+          checkoutUrl,
+        },
+        metaData: CONFIG.META_DATA,
       });
     } catch (error) {
       console.error("Error processing hosted checkout order:", error);
 
       if (error instanceof ValidationError) {
         res.status(400).json({
-          message: "Validation Error",
-          error: error.message,
+          resultType: "ERROR",
+          resultMessage: "Validation Error: " + error.message,
+          metaData: CONFIG.META_DATA,
         });
         return;
       }
 
       if (error instanceof KPayApiError) {
         res.status(error.statusCode || 502).json({
-          message: "Payment API Error",
-          error: error.message,
+          resultType: "ERROR",
+          resultMessage: "Payment API Error: " + error.message,
+          metaData: CONFIG.META_DATA,
         });
         return;
       }
 
       res.status(500).json({
-        message: "Internal Server Error",
-        error:
-          error instanceof Error ? error.message : "Unknown error occurred",
+        resultType: "ERROR",
+        resultMessage: "Internal Server Error: " + (error as Error).message,
+        metaData: CONFIG.META_DATA,
       });
     }
   }

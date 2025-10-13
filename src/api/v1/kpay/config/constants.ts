@@ -1,3 +1,5 @@
+const VERSION = "1.0";
+
 export const CONFIG = {
   API: {
     BASE_URL: "https://payment.uat.kpay-group.com",
@@ -13,4 +15,6 @@ export const CONFIG = {
   TIMEOUTS: {
     REQUEST: 30000,
   },
+  VERSION: VERSION,
+  META_DATA: { version: VERSION } as const,
 } as const;
