@@ -1,0 +1,13 @@
+**/node_modules/
+**/dockerfiles/
+**/*.dockerfile
+**/.DS_Store
+backup/
+bin/
+
+.git*
+.dockerignore
+*.code-workspace
+docker*.yml
+
+README.md

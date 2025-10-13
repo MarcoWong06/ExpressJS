@@ -1,0 +1,14 @@
+services:
+  service-expressjs-kpay:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/build.dockerfile
+    image: cityray/cap-cws/kpay:latest
+
+    ports:
+      - "5000:5000"
+      
+    environment:
+      - "TZ=Asia/Hong_Kong"
+      
+    # command: tail -f /dev/null      

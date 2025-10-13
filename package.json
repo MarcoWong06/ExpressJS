@@ -1,19 +1,25 @@
 {
-  "name": "@cap-cws/express",
+  "name": "@cap-cws/express-kpay",
   "version": "2.1.0",
   "description": "CWS Express - typescript express server for cap",
   "author": "Charles Ting",
+  "main": "build/server.js",
   "type": "module",
   "private": true,
   "engines": {
     "node": ">=20.19.0"
   },
   "config": {
-    "port": 3000
+    "port": 3000,
+    "image": "cityray/cap-cws/kpay",
+    "dockerfile": "./dockerfiles/build.dockerfile"
   },
   "scripts": {
     "start": "cross-env PORT=${npm_package_config_port} CHOKIDAR_USEPOLLING=true CHOKIDAR_INTERVAL=1000 tsx watch src/server-index.ts",
     "test": "cross-env PORT=${npm_package_config_port} CHOKIDAR_USEPOLLING=true CHOKIDAR_INTERVAL=1000 tsx watch src/test-index.ts",
+    "build": "npm-run-all clean esbuild",
+    "clean": "rimraf build/*",
+    "esbuild": "node ./config/esbuild.config.js",
     "typescript-check": "tsc --noEmit",
     "yarn:vesion": "yarn --version",
     "yarn:outdated": "yarn outdated",
@@ -41,12 +47,14 @@
     "@typescript-eslint/parser": "^8.41.0",
     "copyfiles": "^2.4.1",
     "cross-env": "^10.0.0",
-    "eslint": "^9.34.0",
     "globals": "^16.3.0",
     "npm-run-all": "^4.1.5",
     "rimraf": "^6.0.1",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.35.1"
+    "typescript-eslint": "^8.35.1",
+    "esbuild": "^0.25.9",
+    "esbuild-node-externals": "^1.18.0"
+
   }
 }

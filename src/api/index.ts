@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Router } from 'express';
-import v1Router from './v1';
+import kpayV1Router from './v1/kpay';
 
 const apiRouter = Router();
 
@@ -15,6 +15,6 @@ apiRouter.get("/", (_req: Request, res: Response) => {
   });
 });
 
-apiRouter.use('/v1', v1Router);
+apiRouter.use('/v1/kpay', kpayV1Router);
 
 export default apiRouter;
