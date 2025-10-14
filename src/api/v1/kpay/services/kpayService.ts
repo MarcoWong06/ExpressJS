@@ -1,7 +1,8 @@
 import axios from "axios";
-import type { AxiosError } from "axios";
-import type { KPayApiResponse } from "../types";
-import type { CreateAllHostedCheckoutOrderRequest } from "../types/allHostedCheckoutOrderRequest";
+import type {
+  CreateAllHostedCheckoutOrderRequest,
+  CreateAllHostedCheckoutOrderResponse,
+} from "../types/allHostedCheckoutOrder";
 import { CONFIG } from "../config/constants";
 import type { Headers } from "../types/kpayApi";
 
@@ -17,16 +18,27 @@ export class KPayApiError extends Error {
 }
 
 export class KPayService {
-  private readonly baseURL = CONFIG.API.BASE_URL;
-  private readonly timeout = CONFIG.TIMEOUTS.REQUEST;
+  private baseURL: string;
+  private endPoints: string;
+  private timeout: number;
+
+  constructor(
+    baseURL: string,
+    endPoints: string,
+    timeout: number = CONFIG.TIMEOUTS.REQUEST
+  ) {
+    this.baseURL = baseURL;
+    this.endPoints = endPoints;
+    this.timeout = timeout;
+  }
 
   async createOrder(
     requestBody: CreateAllHostedCheckoutOrderRequest,
     headers: Record<string, string>
-  ): Promise<KPayApiResponse> {
+  ): Promise<CreateAllHostedCheckoutOrderResponse> {
     try {
-      const response = await axios.post<KPayApiResponse>(
-        `${this.baseURL}${CONFIG.API.ENDPOINTS.CREATE_ALL_HOSTED_CHECKOUT_ORDER}`,
+      const response = await axios.post<CreateAllHostedCheckoutOrderResponse>(
+        `${this.baseURL}${this.endPoints}`,
         requestBody,
         { headers, timeout: this.timeout }
       );
@@ -50,15 +62,6 @@ export class KPayService {
     } catch (error) {
       if (error instanceof KPayApiError) {
         throw error;
-      }
-
-      if (axios.isAxiosError<AxiosError>(error)) {
-        const axiosError = error as AxiosError;
-        throw new KPayApiError(
-          `API request failed: ${axiosError.message}`,
-          axiosError.response?.status,
-          axiosError.code
-        );
       }
 
       throw new KPayApiError("Unknown error occurred during API request");

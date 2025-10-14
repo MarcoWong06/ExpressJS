@@ -1,4 +1,4 @@
-import type { AllHostedCheckoutOrderRequestBody } from "../types";
+import type { OrderRequest } from "../types";
 
 export class ValidationError extends Error {
   constructor(message: string) {
@@ -7,35 +7,46 @@ export class ValidationError extends Error {
   }
 }
 
-export const validateOrderRequest = (body: Partial<AllHostedCheckoutOrderRequestBody>): void => {
-  const requiredFields = [
+export const validateOrderRequest = (body: Partial<OrderRequest>): void => {
+  const requiredMetaDataFields = [
     "language",
     "kpayApiKey",
     "merchantCode",
     "payAmount",
+    "itemNo",
+    "itemName",
+    "quantity",
   ] as const;
 
-  for (const field of requiredFields) {
-    if (!body[field]) {
+  if (!body || typeof body !== "object") {
+    throw new ValidationError("Request body must be a valid object");
+  }
+
+  if (!body.metaData || typeof body.metaData !== "object") {
+    throw new ValidationError("metaData must be a valid object");
+  }
+
+  for (const field of requiredMetaDataFields) {
+    if (!body.metaData[field]) {
       throw new ValidationError(`Missing required field: ${field}`);
     }
   }
 
-  if (typeof body.payAmount !== "number" || body.payAmount <= 0) {
+  if (typeof body.metaData?.payAmount !== "number" || body.metaData?.payAmount <= 0) {
     throw new ValidationError("payAmount must be a positive number");
   }
 
-  if (body.discountAmount !== null && body.discountAmount !== undefined) {
-    if (typeof body.discountAmount !== "number" || body.discountAmount < 0) {
+  if (body.metaData?.discountAmount !== null && body.metaData?.discountAmount !== undefined) {
+    if (typeof body.metaData?.discountAmount !== "number" || body.metaData?.discountAmount < 0) {
       throw new ValidationError("discountAmount must be a non-negative number");
     }
   }
 
-  if (body.email && !isValidEmail(body.email)) {
+  if (body.dataContent?.email && !isValidEmail(body.dataContent.email)) {
     throw new ValidationError("Invalid email format");
   }
 
-  if (body.phone && !isValidPhone(body.phone)) {
+  if (body.dataContent?.phone && !isValidPhone(body.dataContent.phone)) {
     throw new ValidationError("Invalid phone format");
   }
 };

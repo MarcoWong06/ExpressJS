@@ -1,4 +1,4 @@
-import * as jsrsasign from "jsrsasign";
+import jsrsasign from "jsrsasign";
 import type { SignatureParams } from "../types";
 
 const formatPrivateKey = (privateKey: string): string => {
@@ -46,6 +46,7 @@ export const generateTimestampAndNonce = () => ({
 export const createCheckoutUrl = (
   baseUrl: string,
   managedOrderNo: string,
+  language: string,
   merchantCode: string,
   nonceStr: string,
   timestamp: number,
@@ -53,6 +54,7 @@ export const createCheckoutUrl = (
 ): string => {
   const params = new URLSearchParams({
     managedOrderNo,
+    language,
     "K-Merchant-Code": merchantCode,
     "K-Nonce-Str": nonceStr,
     "K-Timestamp": timestamp.toString(),
