@@ -1,5 +1,5 @@
 import jsrsasign from "jsrsasign";
-import type { SignatureParams } from "../types";
+import type { SignatureParams } from "../types/typeCheckout";
 
 const formatPrivateKey = (privateKey: string): string => {
   if (privateKey.startsWith("-----BEGIN PRIVATE KEY-----")) {

@@ -1,35 +1,49 @@
-import { Language } from "./kpayApi";
+import { Language } from "./typeKpayApi";
 
 export interface OrderRequestMetaData {
   language: Language;
+  kpayApiUrl?: string;
   kpayApiKey: string;
   merchantCode: string;
-  payAmount: number;
-  itemNo: string;
-  itemName: string;
-  quantity: number;
-}
-export interface OrderRequestDataContent {
-  kpayApiUrl?: string;
+  merchantIcon?: string;
   kpayApiCreateAllHostedCheckoutOrderEndpoint?: string;
   kpayApiGenerateAllHostedCheckoutOrderEndpoint?: string;
-  merchantIcon?: string;
-  discountAmount?: number;
   notifyUrl?: string;
   returnUrl?: string;
-  orderRemark?: string;
-  itemIcon?: string;
+}
+export const requiredMetaDataFields = [
+  "language",
+  "kpayApiKey",
+  "merchantCode",
+] as const;
+
+export interface OrderRequestDataContent {
   firstName?: string;
   lastName?: string;
   email?: string;
   phone?: string;
+  itemNo: string;
+  itemName: string;
+  itemIcon?: string;
+  quantity: number;
+  discountAmount?: number;
+  payAmount: number;
+  orderRemark?: string;
 }
+
+export const requiredDataContentFields = [
+  "payAmount",
+  "itemNo",
+  "itemName",
+  "quantity",
+] as const;
 
 export interface OrderResponseDataContent {
   checkoutUrl?: string;
 }
 
-export interface OrderRequest extends ResultObject<OrderRequestDataContent, OrderRequestMetaData> {}
+export interface OrderRequest
+  extends RequestObject<OrderRequestDataContent, OrderRequestMetaData> {}
 
 export interface OrderResponse extends ResultObject<OrderResponseDataContent> {}
 
