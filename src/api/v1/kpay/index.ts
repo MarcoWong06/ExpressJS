@@ -1,6 +1,9 @@
 import { Router } from "express";
-import AllHostedCheckoutOrderRouter from "./routes/AllHostedCheckoutOrder";
+import CheckoutRouter from "./routes/checkout";
 
 const router = Router();
-router.use('/checkout', AllHostedCheckoutOrderRouter);
+
+router.use('/checkout', CheckoutRouter);
+
+
 export default router;

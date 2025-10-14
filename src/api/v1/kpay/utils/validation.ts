@@ -1,5 +1,5 @@
-import { requiredDataContentFields, requiredMetaDataFields } from "../types";
-import type { OrderRequest } from "../types";
+import { requiredDataContentFields, requiredMetaDataFields } from "../types/typeCheckout";
+import type { OrderRequest } from "../types/typeCheckout";
 
 export class ValidationError extends Error {
   constructor(message: string) {

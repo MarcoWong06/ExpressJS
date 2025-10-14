@@ -1,4 +1,4 @@
-import { Language } from "./kpayApi";
+import { Language } from "./typeKpayApi";
 
 export interface OrderRequestMetaData {
   language: Language;

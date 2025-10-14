@@ -2,9 +2,9 @@ import axios from "axios";
 import type {
   CreateAllHostedCheckoutOrderRequest,
   CreateAllHostedCheckoutOrderResponse,
-} from "../types/allHostedCheckoutOrder";
+} from "../types/typeKpayService";
 import { CONFIG } from "../config/constants";
-import type { Headers } from "../types/kpayApi";
+import type { Headers } from "../types/typeKpayApi";
 
 export class KPayApiError extends Error {
   constructor(
