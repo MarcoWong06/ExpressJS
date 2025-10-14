@@ -1,3 +1,4 @@
+import { requiredDataContentFields, requiredMetaDataFields } from "../types";
 import type { OrderRequest } from "../types";
 
 export class ValidationError extends Error {
@@ -8,19 +9,6 @@ export class ValidationError extends Error {
 }
 
 export const validateOrderRequest = (body: Partial<OrderRequest>): void => {
-  const requiredMetaDataFields = [
-    "language",
-    "kpayApiKey",
-    "merchantCode"
-  ] as const;
-
-  const requiredDataContentFields = [
-    "payAmount",
-    "itemNo",
-    "itemName",
-    "quantity",
-  ] as const;
-
   if (!body || typeof body !== "object") {
     throw new ValidationError("Request body must be a valid object");
   }
