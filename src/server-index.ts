@@ -44,14 +44,9 @@ app.use(express.json());
 
 // 基础路由
 app.get("/", (_req: Request, res: Response) => {
-  res.send(`cap-cws-express`);
-});
-
-// 健康检查端点
-app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({
     status: "OK",
-    message: "Service is healthy",
+    message: "cap-cws-express is healthy",
     timestamp: new Date().toISOString(),
   });
 });

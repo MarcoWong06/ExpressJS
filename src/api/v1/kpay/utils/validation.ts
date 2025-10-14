@@ -11,7 +11,10 @@ export const validateOrderRequest = (body: Partial<OrderRequest>): void => {
   const requiredMetaDataFields = [
     "language",
     "kpayApiKey",
-    "merchantCode",
+    "merchantCode"
+  ] as const;
+
+  const requiredDataContentFields = [
     "payAmount",
     "itemNo",
     "itemName",
@@ -26,18 +29,28 @@ export const validateOrderRequest = (body: Partial<OrderRequest>): void => {
     throw new ValidationError("metaData must be a valid object");
   }
 
+  if (!body.dataContent || typeof body.dataContent !== "object") {
+    throw new ValidationError("dataContent must be a valid object");
+  }
+
+  for (const field of requiredDataContentFields) {
+    if (!body.dataContent[field]) {
+      throw new ValidationError(`Missing required field: ${field}`);
+    }
+  }  
+
   for (const field of requiredMetaDataFields) {
     if (!body.metaData[field]) {
       throw new ValidationError(`Missing required field: ${field}`);
     }
   }
 
-  if (typeof body.metaData?.payAmount !== "number" || body.metaData?.payAmount <= 0) {
+  if (typeof body.dataContent?.payAmount !== "number" || body.dataContent?.payAmount <= 0) {
     throw new ValidationError("payAmount must be a positive number");
   }
 
-  if (body.metaData?.discountAmount !== null && body.metaData?.discountAmount !== undefined) {
-    if (typeof body.metaData?.discountAmount !== "number" || body.metaData?.discountAmount < 0) {
+  if (body.dataContent?.discountAmount !== null && body.dataContent?.discountAmount !== undefined) {
+    if (typeof body.dataContent?.discountAmount !== "number" || body.dataContent?.discountAmount < 0) {
       throw new ValidationError("discountAmount must be a non-negative number");
     }
   }
