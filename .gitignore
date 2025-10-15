@@ -4,3 +4,5 @@ build/
 
 package.lock.json
 *.code-workspace
+*.local.env
+*.local.yml

@@ -1,12 +1,7 @@
 import { requiredDataContentFields, requiredMetaDataFields } from "../types/typeCheckout";
 import type { OrderRequest } from "../types/typeCheckout";
+import { ValidationError } from "./error.middleware";
 
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "ValidationError";
-  }
-}
 
 export const validateOrderRequest = (body: Partial<OrderRequest>): void => {
   if (!body || typeof body !== "object") {

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import CheckoutRouter from "./routes/checkout";
+import CheckoutRouter from "./routes/checkout.routes";
 
 const router = Router();
 

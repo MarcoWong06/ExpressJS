@@ -2,9 +2,10 @@ import axios from "axios";
 import type {
   CreateAllHostedCheckoutOrderRequest,
   CreateAllHostedCheckoutOrderResponse,
-} from "../types/typeKpayService";
+} from "../types/typeKpayCreateOrder";
 import { CONFIG } from "../config/constants";
 import type { Headers } from "../types/typeKpayApi";
+import { OrderRequest } from "../types/typeCheckout";
 
 export class KPayApiError extends Error {
   constructor(
@@ -75,4 +76,27 @@ export const createApiHeaders = (headers: Headers) => ({
   "K-Timestamp": headers.Timestamp,
   "K-Signature": headers.Signature,
   "K-Language": headers.Language,
+});
+
+export const createOrderRequestBody = (
+  body: OrderRequest
+): CreateAllHostedCheckoutOrderRequest => ({
+  merchantIcon: body.metaData.merchantIcon || null,
+  managedOutTradeNo: `order_${Date.now()}`,
+  payAmount: body.dataContent.payAmount,
+  payCurrency: CONFIG.DEFAULTS.CURRENCY,
+  discountAmount: body.dataContent.discountAmount || null,
+  notifyUrl: body.metaData.notifyUrl || null,
+  returnUrl: body.metaData.returnUrl || null,
+  orderRemark: body.dataContent.orderRemark || null,
+  itemList: [
+    {
+      itemNo: body.dataContent.itemNo,
+      itemName: body.dataContent.itemName,
+      itemIcon: body.dataContent.itemIcon || null,
+      price: body.dataContent.payAmount + (body.dataContent.discountAmount || 0),
+      priceCurrency: CONFIG.DEFAULTS.CURRENCY,
+      quantity: body.dataContent.quantity,
+    },
+  ],
 });
