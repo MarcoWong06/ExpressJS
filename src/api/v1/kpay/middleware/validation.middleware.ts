@@ -1,7 +1,25 @@
 import { requiredDataContentFields, requiredMetaDataFields } from "../types/typeCheckout";
 import type { OrderRequest } from "../types/typeCheckout";
+import { ResultRequest } from "../types/typeResult";
 import { ValidationError } from "./error.middleware";
 
+export const validateResultRequest = (body: Partial<ResultRequest>): void => {
+  if (!body || typeof body !== "object") {
+    throw new ValidationError("Request body must be a valid object");
+  }
+
+  if (!body.metaData || typeof body.metaData !== "object") {
+    throw new ValidationError("metaData must be a valid object");
+  }
+
+  if (!body.dataContent || typeof body.dataContent !== "object") {
+    throw new ValidationError("dataContent must be a valid object");
+  }
+
+  if (!body.metaData.managedOrderNo && !body.metaData.managedOutTradeNo) {
+    throw new ValidationError("Either managedOrderNo or managedOutTradeNo must be provided in metaData");
+  }
+};
 
 export const validateOrderRequest = (body: Partial<OrderRequest>): void => {
   if (!body || typeof body !== "object") {
