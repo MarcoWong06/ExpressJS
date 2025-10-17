@@ -10,8 +10,8 @@ export interface PaymentOrderList {
 }
 
 export interface QueryAllHostedCheckoutOrderRequest {
-  managedOrderNo?: string;
-  managedOutTradeNo?: string;
+  managedOrderNo?: string | null;
+  managedOutTradeNo?: string | null;
 }
 
 export interface QueryAllHostedCheckoutOrderResponse {

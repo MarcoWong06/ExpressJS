@@ -3,9 +3,25 @@ import type {
   CreateAllHostedCheckoutOrderRequest,
   CreateAllHostedCheckoutOrderResponse,
 } from "../types/typeKpayCreateOrder";
+import type {
+  QueryAllHostedCheckoutOrderRequest,
+  QueryAllHostedCheckoutOrderResponse,
+} from "../types/typeKpayQueryOrder";
 import { CONFIG } from "../config/constants";
 import type { Headers } from "../types/typeKpayApi";
-import { OrderRequest } from "../types/typeCheckout";
+import {
+  QueryPaymentOrderRequest,
+  QueryPaymentOrderResponse,
+} from "../types/typeKpayQueryPayment";
+
+type Request =
+  | CreateAllHostedCheckoutOrderRequest
+  | QueryAllHostedCheckoutOrderRequest
+  | QueryPaymentOrderRequest;
+type Response =
+  | CreateAllHostedCheckoutOrderResponse
+  | QueryAllHostedCheckoutOrderResponse
+  | QueryPaymentOrderResponse;
 
 export class KPayApiError extends Error {
   constructor(
@@ -18,7 +34,10 @@ export class KPayApiError extends Error {
   }
 }
 
-export class KPayService {
+export class KPayService<
+  RequestType extends Request,
+  ResponseType extends Response
+> {
   private baseURL: string;
   private endPoints: string;
   private timeout: number;
@@ -33,44 +52,51 @@ export class KPayService {
     this.timeout = timeout;
   }
 
-  async createOrder(
-    requestBody: CreateAllHostedCheckoutOrderRequest,
+  async post(
+    requestBody: RequestType,
     headers: Record<string, string>
-  ): Promise<CreateAllHostedCheckoutOrderResponse> {
+  ): Promise<ResponseType> {
     try {
-      const response = await axios.post<CreateAllHostedCheckoutOrderResponse>(
+      const response = await axios.post<ResponseType>(
         `${this.baseURL}${this.endPoints}`,
         requestBody,
         { headers, timeout: this.timeout }
       );
-
-      if (!response.data) {
-        throw new KPayApiError(
-          "Invalid response from payment API - no data received"
-        );
-      }
-
-      const { code, message } = response.data;
-      if (!CONFIG.API.SUCCESS_CODES.includes(code)) {
-        throw new KPayApiError(
-          `Payment API error: ${message || code}`,
-          response.status,
-          code
-        );
-      }
-
+      handleResponseError(response);
       return response.data;
     } catch (error) {
       if (error instanceof KPayApiError) {
         throw error;
       }
 
-      throw new KPayApiError("Unknown error occurred during API request");
+      throw new KPayApiError("Unknown error occurred during API POST request");
+    }
+  }
+
+  async get(
+    requestBody: RequestType,
+    headers: Record<string, string>
+  ): Promise<ResponseType> {
+    try {
+      const queryParams = new URLSearchParams(requestBody as any).toString();
+      const response = await axios.get<ResponseType>(
+        `${this.baseURL}${this.endPoints}?${queryParams}`,
+        { headers, timeout: this.timeout }
+      );
+      handleResponseError(response);
+      return response.data;
+    } catch (error) {
+      if (error instanceof KPayApiError) {
+        throw error;
+      }
+
+      throw new KPayApiError("Unknown error occurred during API GET request");
     }
   }
 }
 
 export const createApiHeaders = (headers: Headers) => ({
+  "content-type": "application/json",
   "K-Merchant-Code": headers.MerchantCode,
   "K-Nonce-Str": headers.NonceStr,
   "K-Timestamp": headers.Timestamp,
@@ -78,25 +104,19 @@ export const createApiHeaders = (headers: Headers) => ({
   "K-Language": headers.Language,
 });
 
-export const createOrderRequestBody = (
-  body: OrderRequest
-): CreateAllHostedCheckoutOrderRequest => ({
-  merchantIcon: body.metaData.merchantIcon || null,
-  managedOutTradeNo: `order_${Date.now()}`,
-  payAmount: body.dataContent.payAmount,
-  payCurrency: CONFIG.DEFAULTS.CURRENCY,
-  discountAmount: body.dataContent.discountAmount || null,
-  notifyUrl: body.metaData.notifyUrl || null,
-  returnUrl: body.metaData.returnUrl || null,
-  orderRemark: body.dataContent.orderRemark || null,
-  itemList: [
-    {
-      itemNo: body.dataContent.itemNo,
-      itemName: body.dataContent.itemName,
-      itemIcon: body.dataContent.itemIcon || null,
-      price: body.dataContent.payAmount + (body.dataContent.discountAmount || 0),
-      priceCurrency: CONFIG.DEFAULTS.CURRENCY,
-      quantity: body.dataContent.quantity,
-    },
-  ],
-});
+const handleResponseError = (response: any) => {
+  if (!response || !response.data) {
+    throw new KPayApiError(
+      "Invalid response from payment API - no data received"
+    );
+  }
+
+  const { code, message } = response.data;
+  if (!CONFIG.API.SUCCESS_CODES.includes(code)) {
+    throw new KPayApiError(
+      `Payment API error: ${message || code}`,
+      response.status,
+      code
+    );
+  }
+};

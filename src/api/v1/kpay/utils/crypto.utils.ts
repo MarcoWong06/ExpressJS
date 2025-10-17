@@ -42,24 +42,3 @@ export const generateTimestampAndNonce = () => ({
   timestamp: Date.now(),
   nonceStr: Math.random().toString(36).substring(2, 34),
 });
-
-export const createCheckoutUrl = (
-  baseUrl: string,
-  managedOrderNo: string,
-  language: string,
-  merchantCode: string,
-  nonceStr: string,
-  timestamp: number,
-  signature: string
-): string => {
-  const params = new URLSearchParams({
-    managedOrderNo,
-    language,
-    "K-Merchant-Code": merchantCode,
-    "K-Nonce-Str": nonceStr,
-    "K-Timestamp": timestamp.toString(),
-    "K-Signature": signature,
-  });
-
-  return `${baseUrl}?${params.toString()}`;
-};

@@ -1,10 +1,8 @@
 import { Request, Response } from "express";
 import type { OrderRequest, OrderResponse } from "../types/typeCheckout";
-import { createOrderRequestBody } from "../services/kpay.service";
 import {
   generateSignature,
   generateTimestampAndNonce,
-  createCheckoutUrl,
 } from "../utils/crypto.utils";
 import { validateOrderRequest } from "../middleware/validation.middleware";
 import {
@@ -14,6 +12,10 @@ import {
 } from "../services/kpay.service";
 import { CONFIG } from "../config/constants";
 import { ValidationError } from "../middleware/error.middleware";
+import {
+  CreateAllHostedCheckoutOrderRequest,
+  CreateAllHostedCheckoutOrderResponse,
+} from "../types/typeKpayCreateOrder";
 
 export const checkoutController = async (
   req: Request<OrderRequest>,
@@ -28,7 +30,6 @@ export const checkoutController = async (
 
     // Create order request
     const orderRequest = createOrderRequestBody(req.body);
-    const { timestamp, nonceStr } = generateTimestampAndNonce();
     const bodyString = JSON.stringify(orderRequest);
     const baseURL = dataContent.kpayApiUrl ?? CONFIG.API.BASE_URL;
     const createOrderEndpoint =
@@ -42,6 +43,7 @@ export const checkoutController = async (
     const merchantCode = metaData.merchantCode;
 
     // Generate signature for order creation
+    const { timestamp, nonceStr } = generateTimestampAndNonce();
     const signature = generateSignature(
       {
         requestMethod: "POST",
@@ -64,8 +66,11 @@ export const checkoutController = async (
     });
 
     // Create order via KPay API
-    const kpayService = new KPayService(baseURL, createOrderEndpoint);
-    const apiResponse = await kpayService.createOrder(orderRequest, headers);
+    const kpayService = new KPayService<
+      CreateAllHostedCheckoutOrderRequest,
+      CreateAllHostedCheckoutOrderResponse
+    >(baseURL, createOrderEndpoint);
+    const apiResponse = await kpayService.post(orderRequest, headers);
     if (
       !CONFIG.API.SUCCESS_CODES.includes(apiResponse.code) ||
       !apiResponse.data
@@ -82,10 +87,11 @@ export const checkoutController = async (
     // Generate new signature for checkout URL
     const { timestamp: newTimestamp, nonceStr: newNonceStr } =
       generateTimestampAndNonce();
+    const requestUri = `${generateOrderEndpoint}?managedOrderNo=${managedOrderNo}&language=${language}&K-Merchant-Code=${merchantCode}&K-Nonce-Str=${newNonceStr}&K-Timestamp=${newTimestamp}`;
     const checkoutSignature = generateSignature(
       {
         requestMethod: "GET",
-        requestUri: `${generateOrderEndpoint}?managedOrderNo=${managedOrderNo}&language=${language}&K-Merchant-Code=${merchantCode}&K-Nonce-Str=${newNonceStr}&K-Timestamp=${newTimestamp}`,
+        requestUri,
         body: "",
         merchantCode,
         timestamp: newTimestamp,
@@ -95,15 +101,7 @@ export const checkoutController = async (
     );
 
     // Create checkout URL
-    const checkoutUrl = createCheckoutUrl(
-      `${baseURL}${generateOrderEndpoint}`,
-      managedOrderNo,
-      language,
-      merchantCode,
-      newNonceStr,
-      newTimestamp,
-      checkoutSignature
-    );
+    const checkoutUrl = requestUri + `&K-Signature=${checkoutSignature}`;
 
     res.status(200).json({
       resultType: "SUCCESS",
@@ -141,3 +139,27 @@ export const checkoutController = async (
     });
   }
 };
+
+const createOrderRequestBody = (
+  body: OrderRequest
+): CreateAllHostedCheckoutOrderRequest => ({
+  merchantIcon: body.metaData.merchantIcon || null,
+  managedOutTradeNo: `order_${Date.now()}`,
+  payAmount: body.dataContent.payAmount,
+  payCurrency: CONFIG.DEFAULTS.CURRENCY,
+  discountAmount: body.dataContent.discountAmount || null,
+  notifyUrl: body.metaData.notifyUrl || null,
+  returnUrl: body.metaData.returnUrl || null,
+  orderRemark: body.dataContent.orderRemark || null,
+  itemList: [
+    {
+      itemNo: body.dataContent.itemNo,
+      itemName: body.dataContent.itemName,
+      itemIcon: body.dataContent.itemIcon || null,
+      price:
+        body.dataContent.payAmount + (body.dataContent.discountAmount || 0),
+      priceCurrency: CONFIG.DEFAULTS.CURRENCY,
+      quantity: body.dataContent.quantity,
+    },
+  ],
+});
