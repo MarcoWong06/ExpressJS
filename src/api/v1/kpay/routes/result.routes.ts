@@ -1,7 +1,7 @@
 import express from "express";
-import { checkoutController } from "../controller/checkout.controller";
+import { resultController } from "../controller/result.controller";
 
 const router = express.Router();
-router.post("/", checkoutController);
+router.post("/", resultController);
 
 export default router;

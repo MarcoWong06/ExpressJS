@@ -5,11 +5,7 @@ import {
   generateTimestampAndNonce,
 } from "../utils/crypto.utils";
 import { validateOrderRequest } from "../middleware/validation.middleware";
-import {
-  KPayService,
-  KPayApiError,
-  createApiHeaders,
-} from "../services/kpay.service";
+import { KPayService, KPayApiError } from "../services/kpay.service";
 import { CONFIG } from "../config/constants";
 import { ValidationError } from "../middleware/error.middleware";
 import {
@@ -30,7 +26,6 @@ export const checkoutController = async (
 
     // Create order request
     const orderRequest = createOrderRequestBody(req.body);
-    const bodyString = JSON.stringify(orderRequest);
     const baseURL = dataContent.kpayApiUrl ?? CONFIG.API.BASE_URL;
     const createOrderEndpoint =
       dataContent.kpayApiCreateAllHostedCheckoutOrderEndpoint ??
@@ -42,13 +37,46 @@ export const checkoutController = async (
     const kpayApiKey = metaData.kpayApiKey;
     const merchantCode = metaData.merchantCode;
 
-    // Generate signature for order creation
+    // Create order via KPay API
+    const kpayService = new KPayService<
+      CreateAllHostedCheckoutOrderRequest,
+      CreateAllHostedCheckoutOrderResponse
+    >(baseURL, createOrderEndpoint);
+    const managedOrder = await kpayService
+      .post(orderRequest, merchantCode, kpayApiKey, language)
+      .then((response) => {
+        if (
+          !CONFIG.API.SUCCESS_CODES.includes(response.code) ||
+          !response.data
+        ) {
+          throw new KPayApiError(
+            `Failed to create order: ${response.message} with code ${response.code}`,
+            undefined,
+            response.code
+          );
+        }
+        return response.data;
+      });
+
+    const managedOrderNo = managedOrder.managedOrderNo;
+    const managedOutTradeNo = orderRequest.managedOutTradeNo;
+
+    // Generate new signature for checkout URL
     const { timestamp, nonceStr } = generateTimestampAndNonce();
-    const signature = generateSignature(
+
+    // Create checkout URL
+    const checkoutUrl = new URL(generateOrderEndpoint, baseURL);
+    checkoutUrl.searchParams.append("managedOrderNo", managedOrderNo);
+    checkoutUrl.searchParams.append("language", language);
+    checkoutUrl.searchParams.append("K-Merchant-Code", merchantCode);
+    checkoutUrl.searchParams.append("K-Nonce-Str", nonceStr);
+    checkoutUrl.searchParams.append("K-Timestamp", timestamp.toString());
+    const requestUri = checkoutUrl.searchParams;
+    const checkoutSignature = generateSignature(
       {
-        requestMethod: "POST",
-        requestUri: CONFIG.API.ENDPOINTS.CREATE_ALL_HOSTED_CHECKOUT_ORDER,
-        body: bodyString,
+        requestMethod: "GET",
+        endPoints: `${generateOrderEndpoint}?${requestUri.toString()}`,
+        body: "",
         merchantCode,
         timestamp,
         nonceStr,
@@ -56,58 +84,15 @@ export const checkoutController = async (
       kpayApiKey
     );
 
-    // Create API headers
-    const headers = createApiHeaders({
-      MerchantCode: merchantCode,
-      NonceStr: nonceStr,
-      Timestamp: timestamp.toString(),
-      Signature: signature,
-      Language: language,
-    });
-
-    // Create order via KPay API
-    const kpayService = new KPayService<
-      CreateAllHostedCheckoutOrderRequest,
-      CreateAllHostedCheckoutOrderResponse
-    >(baseURL, createOrderEndpoint);
-    const apiResponse = await kpayService.post(orderRequest, headers);
-    if (
-      !CONFIG.API.SUCCESS_CODES.includes(apiResponse.code) ||
-      !apiResponse.data
-    ) {
-      throw new KPayApiError(
-        `Failed to create order: ${apiResponse.message} with code ${apiResponse.code}`,
-        undefined,
-        apiResponse.code
-      );
-    }
-
-    const managedOrderNo = apiResponse.data.managedOrderNo;
-
-    // Generate new signature for checkout URL
-    const { timestamp: newTimestamp, nonceStr: newNonceStr } =
-      generateTimestampAndNonce();
-    const requestUri = `${generateOrderEndpoint}?managedOrderNo=${managedOrderNo}&language=${language}&K-Merchant-Code=${merchantCode}&K-Nonce-Str=${newNonceStr}&K-Timestamp=${newTimestamp}`;
-    const checkoutSignature = generateSignature(
-      {
-        requestMethod: "GET",
-        requestUri,
-        body: "",
-        merchantCode,
-        timestamp: newTimestamp,
-        nonceStr: newNonceStr,
-      },
-      kpayApiKey
-    );
-
-    // Create checkout URL
-    const checkoutUrl = requestUri + `&K-Signature=${checkoutSignature}`;
+    checkoutUrl.searchParams.append("K-Signature", checkoutSignature);
 
     res.status(200).json({
       resultType: "SUCCESS",
       resultMessage: "Hosted checkout order created successfully",
       dataContent: {
-        checkoutUrl,
+        managedOrderNo,
+        managedOutTradeNo,
+        checkoutUrl: checkoutUrl.toString(),
       },
       metaData: CONFIG.META_DATA,
     });

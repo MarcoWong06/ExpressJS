@@ -16,7 +16,7 @@ export const validateResultRequest = (body: Partial<ResultRequest>): void => {
     throw new ValidationError("dataContent must be a valid object");
   }
 
-  if (!body.metaData.managedOrderNo && !body.metaData.managedOutTradeNo) {
+  if (!body.dataContent.managedOrderNo && !body.dataContent.managedOutTradeNo) {
     throw new ValidationError("Either managedOrderNo or managedOutTradeNo must be provided in metaData");
   }
 };

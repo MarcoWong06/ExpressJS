@@ -1,6 +1,7 @@
 import {
   CardOrganization,
   Language,
+  ManagedOrderState,
   OrderState,
   PaymentMethod,
   Result,
@@ -28,22 +29,22 @@ export interface ResultResponseDataContent {
   managedOutTradeNo: string;
   payAmount: number;
   payCurrency: string;
-  managedOrderStatus: number;
-  outTradeNo: string;
-  orderNo: string;
+  managedOrderState: ManagedOrderState;
+  outTradeNo?: string;
+  orderNo?: string;
   transactionNo?: string | undefined;
-  transactionAmount?: number | undefined;
+  transactionAccount?: string | undefined;
   payMethodId?: PaymentMethod | undefined;
   transactionTypeId?: TransactionType | undefined;
   cardOrganizationId?: CardOrganization | undefined;
   walletType?: WalletType | undefined;
   channelSerialNo?: string | undefined;
-  localPayAmount: number | undefined;
-  localPayCurrency: string | undefined;
+  localPayAmount?: number | undefined;
+  localPayCurrency?: string | undefined;
   transactionFinishTime?: string | undefined;
-  result: Result | undefined;
+  result?: Result | undefined;
   reason?: string | undefined;
-  orderState: OrderState | undefined;
+  orderState?: OrderState | undefined;
 }
 
 export interface ResultRequest

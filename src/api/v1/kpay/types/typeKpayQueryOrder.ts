@@ -1,10 +1,10 @@
-import { ManagedOrderStatus, OrderState, Result } from "./typeKpayApi";
+import { ManagedOrderState, OrderState, Result } from "./typeKpayApi";
 
 export interface PaymentOrderList {
   outTradeNo: string;
   orderNo: string;
   transactionNo?: string;
-  transactionAmount?: number;
+  transactionAccount?: string;
   result: Result;
   orderState: OrderState;
 }
@@ -23,7 +23,7 @@ export interface QueryAllHostedCheckoutOrderResponse {
     managedOrderNo: string;
     payAmount: number;
     payCurrency: string;
-    managedOrderStatus: ManagedOrderStatus;
+    managedOrderState: ManagedOrderState;
     paymentOrderList?: PaymentOrderList[];
   };
 }

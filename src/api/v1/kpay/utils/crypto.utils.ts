@@ -1,5 +1,5 @@
 import jsrsasign from "jsrsasign";
-import type { SignatureParams } from "../types/typeCheckout";
+import type { SignatureParams } from "../types/typeKpayApi";
 
 const formatPrivateKey = (privateKey: string): string => {
   if (privateKey.startsWith("-----BEGIN PRIVATE KEY-----")) {
@@ -12,7 +12,7 @@ const formatPrivateKey = (privateKey: string): string => {
 export const generateSignature = (
   {
     requestMethod,
-    requestUri,
+    endPoints,
     timestamp,
     nonceStr,
     merchantCode,
@@ -21,7 +21,7 @@ export const generateSignature = (
   kpayApiKey: string
 ): string => {
   try {
-    const signString = `${requestMethod}\n${requestUri}\n${timestamp}\n${nonceStr}\n${merchantCode}\n${body}\n`;
+    const signString = `${requestMethod}\n${endPoints}\n${timestamp}\n${nonceStr}\n${merchantCode}\n${body}\n`;
     const formattedPrivateKey = formatPrivateKey(kpayApiKey);
 
     const sha256withrsa = new jsrsasign.KJUR.crypto.Signature({
@@ -30,8 +30,9 @@ export const generateSignature = (
 
     sha256withrsa.init(formattedPrivateKey);
     sha256withrsa.updateString(signString);
-
-    return jsrsasign.hextob64(sha256withrsa.sign());
+    const signature = jsrsasign.hextob64(sha256withrsa.sign());
+    
+    return signature;
   } catch (error) {
     console.error("Signature generation failed:", error);
     throw new Error("Failed to generate signature");

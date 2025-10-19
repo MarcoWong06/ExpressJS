@@ -20,7 +20,7 @@ export interface Headers {
   Language: Language;
 }
 
-export enum ManagedOrderStatus {
+export enum ManagedOrderState {
   PENDING_PAYMENT = 1,
   PAID = 2,
   EXPIRED = 3,
@@ -162,4 +162,13 @@ export enum WalletType {
   ALIPAY_CN = "ALIPAY_CN",
   WECHATPAY_HK = "WECHATPAY_HK",
   WECHATPAY_CN = "WECHATPAY_CN",
+}
+
+export interface SignatureParams {
+  requestMethod: string;
+  endPoints: string;
+  timestamp: number;
+  nonceStr: string;
+  merchantCode: string;
+  body: string;
 }

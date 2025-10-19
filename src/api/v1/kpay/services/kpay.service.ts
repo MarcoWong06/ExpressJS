@@ -8,11 +8,15 @@ import type {
   QueryAllHostedCheckoutOrderResponse,
 } from "../types/typeKpayQueryOrder";
 import { CONFIG } from "../config/constants";
-import type { Headers } from "../types/typeKpayApi";
+import { Language, type Headers } from "../types/typeKpayApi";
 import {
   QueryPaymentOrderRequest,
   QueryPaymentOrderResponse,
 } from "../types/typeKpayQueryPayment";
+import {
+  generateSignature,
+  generateTimestampAndNonce,
+} from "../utils/crypto.utils";
 
 type Request =
   | CreateAllHostedCheckoutOrderRequest
@@ -54,14 +58,44 @@ export class KPayService<
 
   async post(
     requestBody: RequestType,
-    headers: Record<string, string>
+    merchantCode: string,
+    kpayApiKey: string,
+    language: Language
   ): Promise<ResponseType> {
     try {
-      const response = await axios.post<ResponseType>(
-        `${this.baseURL}${this.endPoints}`,
-        requestBody,
-        { headers, timeout: this.timeout }
+      const requestUri = new URL(this.endPoints, this.baseURL);
+      requestUri.search = new URLSearchParams(requestBody as any).toString();
+
+      // Generate signature for order query
+      const { timestamp, nonceStr } = generateTimestampAndNonce();
+      const signature = generateSignature(
+        {
+          requestMethod: "POST",
+          endPoints: this.endPoints,
+          timestamp,
+          nonceStr,
+          merchantCode,
+          body: JSON.stringify(requestBody),
+        },
+        kpayApiKey
       );
+
+      const headers = createApiHeaders({
+        MerchantCode: merchantCode,
+        NonceStr: nonceStr,
+        Timestamp: timestamp.toString(),
+        Signature: signature,
+        Language: language,
+      });
+      const response = await axios.post<ResponseType>(
+        requestUri.toString(),
+        requestBody,
+        {
+          headers,
+          timeout: this.timeout,
+        }
+      );
+
       handleResponseError(response);
       return response.data;
     } catch (error) {
@@ -75,21 +109,46 @@ export class KPayService<
 
   async get(
     requestBody: RequestType,
-    headers: Record<string, string>
+    merchantCode: string,
+    kpayApiKey: string,
+    language: Language
   ): Promise<ResponseType> {
     try {
-      const queryParams = new URLSearchParams(requestBody as any).toString();
-      const response = await axios.get<ResponseType>(
-        `${this.baseURL}${this.endPoints}?${queryParams}`,
-        { headers, timeout: this.timeout }
+      const requestUri = new URL(this.endPoints, this.baseURL);
+      requestUri.search = new URLSearchParams(requestBody as any).toString();
+
+      // Generate signature for order query
+      const { timestamp, nonceStr } = generateTimestampAndNonce();
+      const signature = generateSignature(
+        {
+          requestMethod: "GET",
+          endPoints: this.endPoints + requestUri.search,
+          timestamp,
+          nonceStr,
+          merchantCode,
+          body: "",
+        },
+        kpayApiKey
       );
+
+      const headers = createApiHeaders({
+        MerchantCode: merchantCode,
+        NonceStr: nonceStr,
+        Timestamp: timestamp.toString(),
+        Signature: signature,
+        Language: language,
+      });
+      const response = await axios.get<ResponseType>(requestUri.toString(), {
+        headers,
+        timeout: this.timeout,
+      });
+
       handleResponseError(response);
       return response.data;
     } catch (error) {
       if (error instanceof KPayApiError) {
         throw error;
       }
-
       throw new KPayApiError("Unknown error occurred during API GET request");
     }
   }
@@ -114,9 +173,9 @@ const handleResponseError = (response: any) => {
   const { code, message } = response.data;
   if (!CONFIG.API.SUCCESS_CODES.includes(code)) {
     throw new KPayApiError(
-      `Payment API error: ${message || code}`,
-      response.status,
-      code
+        `Failed to create order: ${message} with code ${code}`,
+        undefined,
+        code
     );
   }
 };
