@@ -1,5 +1,4 @@
-import { OrderRequest } from "./typeCheckout";
-import { CONFIG } from "../config/constants";
+
 import { PageFeatureControl } from "./typeKpayApi";
 
 
@@ -68,26 +67,3 @@ export interface CreateAllHostedCheckoutOrderResponse {
     managedOrderNo: string;
   };
 }
-
-export const createOrderRequestBody = (
-  body: OrderRequest
-): CreateAllHostedCheckoutOrderRequest => ({
-  merchantIcon: body.metaData.merchantIcon || null,
-  managedOutTradeNo: `order_${Date.now()}`,
-  payAmount: body.dataContent.payAmount,
-  payCurrency: CONFIG.DEFAULTS.CURRENCY,
-  discountAmount: body.dataContent.discountAmount || null,
-  notifyUrl: body.metaData.notifyUrl || null,
-  returnUrl: body.metaData.returnUrl || null,
-  orderRemark: body.dataContent.orderRemark || null,
-  itemList: [
-    {
-      itemNo: body.dataContent.itemNo,
-      itemName: body.dataContent.itemName,
-      itemIcon: body.dataContent.itemIcon || null,
-      price: body.dataContent.payAmount + (body.dataContent.discountAmount || 0),
-      priceCurrency: CONFIG.DEFAULTS.CURRENCY,
-      quantity: body.dataContent.quantity,
-    },
-  ],
-});

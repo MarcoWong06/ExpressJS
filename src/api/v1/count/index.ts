@@ -41,10 +41,17 @@ countRouter.post(
         dataContent: count,
         metaData: { version: "1.0.0" },
       });
-    } catch (error: Error) {
-      return res.status(400).json({
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({
+          resultType: "ERROR",
+          resultMessage: error.message,
+          metaData: { version: "1.0.0" },
+        });
+      }
+      return res.status(500).json({
         resultType: "ERROR",
-        resultMessage: error.message,
+        resultMessage: "An unknown error occurred",
         metaData: { version: "1.0.0" },
       });
     }
@@ -74,13 +81,20 @@ countRouter.put(
         dataContent: count,
         metaData: { version: "1.0.0" },
       });
-    } catch (error: Error) {
-      return res.status(400).json({
-        resultType: "ERROR",
-        resultMessage: error.message,
-        metaData: { version: "1.0.0" },
-      });
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({
+          resultType: "ERROR",
+          resultMessage: error.message,
+          metaData: { version: "1.0.0" },
+        });
+      }
     }
+    return res.status(500).json({
+      resultType: "ERROR",
+      resultMessage: "An unknown error occurred",
+      metaData: { version: "1.0.0" },
+    });
   }
 );
 
