@@ -12,7 +12,6 @@ export interface OrderRequestMetaData {
   returnUrl?: string;
 }
 export const requiredMetaDataFields = [
-  "language",
   "kpayApiKey",
   "merchantCode",
 ] as const;
@@ -39,19 +38,12 @@ export const requiredDataContentFields = [
 ] as const;
 
 export interface OrderResponseDataContent {
-  checkoutUrl?: string;
+  managedOrderNo: string;
+  managedOutTradeNo: string;
+  checkoutUrl: string;
 }
 
 export interface OrderRequest
   extends RequestObject<OrderRequestDataContent, OrderRequestMetaData> {}
 
 export interface OrderResponse extends ResultObject<OrderResponseDataContent> {}
-
-export interface SignatureParams {
-  requestMethod: string;
-  requestUri: string;
-  timestamp: number;
-  nonceStr: string;
-  merchantCode: string;
-  body: string;
-}

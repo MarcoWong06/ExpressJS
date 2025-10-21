@@ -6,6 +6,8 @@ export const CONFIG = {
     ENDPOINTS: {
       CREATE_ALL_HOSTED_CHECKOUT_ORDER: "/v1/managed/order/add",
       GENERATE_ALL_HOSTED_CHECKOUT_ORDER: "/v1/web/managed/order",
+      QUERY_ALL_HOSTED_CHECKOUT_ORDER: "/v1/managed/order/result",
+      QUERY_PAYMENT_ORDER: "/v1/order/sales/result",
     },
     SUCCESS_CODES: [10000, "10000"] as readonly (number | string)[],
   },
