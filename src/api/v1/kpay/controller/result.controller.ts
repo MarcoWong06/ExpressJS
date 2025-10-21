@@ -12,6 +12,7 @@ import {
   QueryPaymentOrderRequest,
   QueryPaymentOrderResponse,
 } from "../types/typeKpayQueryPayment";
+import { OrderState, Result } from "../types/typeKpayApi";
 
 export const resultController = async (
   req: Request<ResultRequest>,
@@ -63,11 +64,16 @@ export const resultController = async (
     console.log("Order Data:", orderData);
 
     const paymentOrderList = orderData.paymentOrderList || [];
-    if (!paymentOrderList[0]) {
+    const paymentOrder = paymentOrderList.filter(
+      (order) =>
+        order.result === Result.SUCCESSFULLY_PROCESSED &&
+        order.orderState === OrderState.ORDER_PLACED_SUCCESSFULLY
+    )[0];
+    if (!paymentOrder) {
       res.status(200).json({
         resultType: "SUCCESS",
         resultMessage:
-          "Order information retrieved successfully, but no payment data found",
+          "Order information retrieved successfully, but no valid payment data found",
         dataContent: {
           merchantCode,
           managedOrderNo,
@@ -85,13 +91,12 @@ export const resultController = async (
     const payAmount = orderData.payAmount;
     const payCurrency = orderData.payCurrency;
     const managedOrderState = orderData.managedOrderState;
-    const outTradeNo = paymentOrderList[0].outTradeNo;
-    const orderNo = paymentOrderList[0].orderNo;
-    const transactionNo = paymentOrderList[0].transactionNo ?? undefined;
-    const transactionAccount =
-      paymentOrderList[0].transactionAccount ?? undefined;
-    const result = paymentOrderList[0].result;
-    const orderState = paymentOrderList[0].orderState;
+    const outTradeNo = paymentOrder.outTradeNo;
+    const orderNo = paymentOrder.orderNo;
+    const transactionNo = paymentOrder.transactionNo ?? undefined;
+    const transactionAccount = paymentOrder.transactionAccount ?? undefined;
+    const result = paymentOrder.result;
+    const orderState = paymentOrder.orderState;
 
     const kpayQueryPaymentService = new KPayService<
       QueryPaymentOrderRequest,
