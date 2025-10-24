@@ -2,7 +2,8 @@
 **/node_modules/
 build/
 
-package.lock.json
+package-lock.json
+yarn.lock
 *.code-workspace
 *.local.env
 *.local.yml
