@@ -13,7 +13,7 @@ type RequestObject<T = any, M = Record<string, any>> = {
   resultType?: IResultType;
   resultMessage?: string;
   dataContent: T;
-  metaData: M & {
+  metaData?: M & {
     version: string;
     redis?: boolean;
     [key: string]: any;
@@ -24,7 +24,7 @@ type ResultObject<T = any, M = Record<string, any>> = {
   resultType: IResultType;
   resultMessage?: string;
   dataContent?: T;
-  metaData: M & {
+  metaData?: M & {
     version: string;
     redis?: boolean;
     [key: string]: any;
