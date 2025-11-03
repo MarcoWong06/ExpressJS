@@ -164,18 +164,26 @@ export const createApiHeaders = (headers: Headers) => ({
 });
 
 const handleResponseError = (response: any) => {
+  if (response.status !== 200) {
+    throw new KPayApiError(
+      `API request failed with status code ${response.status}`,
+      response.status
+    );
+  }
+
   if (!response || !response.data) {
     throw new KPayApiError(
-      "Invalid response from payment API - no data received"
+      "Invalid response from payment API - no data received",
+      response.status
     );
   }
 
   const { code, message } = response.data;
   if (!CONFIG.API.SUCCESS_CODES.includes(code)) {
     throw new KPayApiError(
-        `Failed to create order: ${message} with code ${code}`,
-        undefined,
-        code
+      `Failed to create order: ${message} with code ${code}`,
+      response.status,
+      code
     );
   }
 };
