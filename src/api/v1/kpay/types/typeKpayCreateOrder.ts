@@ -66,8 +66,4 @@ export interface CreateAllHostedCheckoutOrderResponse {
   data?: {
     managedOrderNo: string;
   };
-<<<<<<<< HEAD:src/api/v1/kpay/types/typeKpayCreateOrder.ts
 }
-========
-}
->>>>>>>> 09d169b (feat(kpay): implement KPay service and order management):src/api/v1/kpay/types/allHostedCheckoutOrder.ts
