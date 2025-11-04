@@ -1,6 +1,6 @@
 {
   "name": "@cap-cws/express-kpay",
-  "version": "2.1.0",
+  "version": "2.2.5",
   "description": "CWS Express - typescript express server for cap",
   "author": "Charles Ting",
   "main": "build/server.js",
