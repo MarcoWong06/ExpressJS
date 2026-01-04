@@ -26,12 +26,12 @@ export const checkoutController = async (
 
     // Create order request
     const orderRequest = createOrderRequestBody(req.body);
-    const baseURL = dataContent.kpayApiUrl ?? CONFIG.API.BASE_URL;
+    const baseURL = dataContent.kpayApiUrl || CONFIG.API.BASE_URL;
     const createOrderEndpoint =
-      dataContent.kpayApiCreateAllHostedCheckoutOrderEndpoint ??
+      dataContent.kpayApiCreateAllHostedCheckoutOrderEndpoint ||
       CONFIG.API.ENDPOINTS.CREATE_ALL_HOSTED_CHECKOUT_ORDER;
     const generateOrderEndpoint =
-      dataContent.kpayApiGenerateAllHostedCheckoutOrderEndpoint ??
+      dataContent.kpayApiGenerateAllHostedCheckoutOrderEndpoint ||
       CONFIG.API.ENDPOINTS.GENERATE_ALL_HOSTED_CHECKOUT_ORDER;
     const language = metaData.language;
     const kpayApiKey = metaData.kpayApiKey;
@@ -128,13 +128,13 @@ export const checkoutController = async (
 const createOrderRequestBody = (
   body: OrderRequest
 ): CreateAllHostedCheckoutOrderRequest => ({
-  merchantIcon: body.metaData.merchantIcon || null,
+  merchantIcon: body.metaData?.merchantIcon || null,
   managedOutTradeNo: `order_${Date.now()}`,
   payAmount: body.dataContent.payAmount,
   payCurrency: CONFIG.DEFAULTS.CURRENCY,
   discountAmount: body.dataContent.discountAmount || null,
-  notifyUrl: body.metaData.notifyUrl || null,
-  returnUrl: body.metaData.returnUrl || null,
+  notifyUrl: body.metaData?.notifyUrl || null,
+  returnUrl: body.metaData?.returnUrl || null,
   orderRemark: body.dataContent.orderRemark || null,
   itemList: [
     {

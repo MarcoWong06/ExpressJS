@@ -29,12 +29,12 @@ export const resultController = async (
     const merchantCode = metaData.merchantCode;
     const managedOrderNo = dataContent.managedOrderNo || "";
     const managedOutTradeNo = dataContent.managedOutTradeNo || "";
-    const baseURL = dataContent.kpayApiUrl ?? CONFIG.API.BASE_URL;
+    const baseURL = dataContent.kpayApiUrl || CONFIG.API.BASE_URL;
     const queryCheckoutOrderEndpoint =
-      dataContent.kpayApiQueryAllHostedCheckoutOrderEndpoint ??
+      dataContent.kpayApiQueryAllHostedCheckoutOrderEndpoint ||
       CONFIG.API.ENDPOINTS.QUERY_ALL_HOSTED_CHECKOUT_ORDER;
     const queryPaymentOrderEndpoint =
-      dataContent.kpayApiQueryPaymentOrderEndpoint ??
+      dataContent.kpayApiQueryPaymentOrderEndpoint ||
       CONFIG.API.ENDPOINTS.QUERY_PAYMENT_ORDER;
 
     const kpayQueryOrderService = new KPayService<
@@ -61,7 +61,6 @@ export const resultController = async (
         }
         return response.data;
       });
-    console.log("Order Data:", orderData);
 
     const paymentOrderList = orderData.paymentOrderList || [];
     const paymentOrder = paymentOrderList.filter(
@@ -81,6 +80,7 @@ export const resultController = async (
           payAmount: orderData.payAmount,
           payCurrency: orderData.payCurrency,
           managedOrderState: orderData.managedOrderState,
+          paymentOrderList,
         },
         metaData: CONFIG.META_DATA,
       });
@@ -139,6 +139,7 @@ export const resultController = async (
         payAmount,
         payCurrency,
         managedOrderState,
+        paymentOrderList,
         outTradeNo,
         orderNo,
         transactionNo,

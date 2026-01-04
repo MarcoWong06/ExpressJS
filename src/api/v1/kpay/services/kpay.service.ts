@@ -1,31 +1,11 @@
 import axios from "axios";
-import type {
-  CreateAllHostedCheckoutOrderRequest,
-  CreateAllHostedCheckoutOrderResponse,
-} from "../types/typeKpayCreateOrder";
-import type {
-  QueryAllHostedCheckoutOrderRequest,
-  QueryAllHostedCheckoutOrderResponse,
-} from "../types/typeKpayQueryOrder";
 import { CONFIG } from "../config/constants";
 import { Language, type Headers } from "../types/typeKpayApi";
-import {
-  QueryPaymentOrderRequest,
-  QueryPaymentOrderResponse,
-} from "../types/typeKpayQueryPayment";
 import {
   generateSignature,
   generateTimestampAndNonce,
 } from "../utils/crypto.utils";
-
-type Request =
-  | CreateAllHostedCheckoutOrderRequest
-  | QueryAllHostedCheckoutOrderRequest
-  | QueryPaymentOrderRequest;
-type Response =
-  | CreateAllHostedCheckoutOrderResponse
-  | QueryAllHostedCheckoutOrderResponse
-  | QueryPaymentOrderResponse;
+import { Request, Response } from "../types/typeKpayService";
 
 export class KPayApiError extends Error {
   constructor(
@@ -64,7 +44,6 @@ export class KPayService<
   ): Promise<ResponseType> {
     try {
       const requestUri = new URL(this.endPoints, this.baseURL);
-      requestUri.search = new URLSearchParams(requestBody as any).toString();
 
       // Generate signature for order query
       const { timestamp, nonceStr } = generateTimestampAndNonce();
@@ -87,6 +66,8 @@ export class KPayService<
         Signature: signature,
         Language: language,
       });
+      console.log("Request URI:", requestUri.toString());
+      console.log("Request Body:", requestBody);
       const response = await axios.post<ResponseType>(
         requestUri.toString(),
         requestBody,

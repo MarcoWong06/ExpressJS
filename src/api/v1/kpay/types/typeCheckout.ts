@@ -11,7 +11,7 @@ export interface OrderRequestMetaData {
   notifyUrl?: string;
   returnUrl?: string;
 }
-export const requiredMetaDataFields = [
+export const requiredCheckoutMetaDataFields = [
   "kpayApiKey",
   "merchantCode",
 ] as const;
@@ -30,7 +30,7 @@ export interface OrderRequestDataContent {
   orderRemark?: string;
 }
 
-export const requiredDataContentFields = [
+export const requiredCheckoutDataContentFields = [
   "payAmount",
   "itemNo",
   "itemName",
