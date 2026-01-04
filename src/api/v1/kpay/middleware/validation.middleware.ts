@@ -59,7 +59,7 @@ export const validateResultRequest = (body: Partial<ResultRequest>): void => {
 
   if (!body.dataContent.managedOrderNo && !body.dataContent.managedOutTradeNo) {
     throw new ValidationError(
-      "Either managedOrderNo or managedOutTradeNo must be provided in metaData"
+      "Either managedOrderNo or managedOutTradeNo must be provided in dataContent"
     );
   }
 };
