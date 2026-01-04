@@ -67,7 +67,6 @@ export class KPayService<
         Language: language,
       });
       console.log("Request URI:", requestUri.toString());
-      console.log("Request Body:", requestBody);
       const response = await axios.post<ResponseType>(
         requestUri.toString(),
         requestBody,
