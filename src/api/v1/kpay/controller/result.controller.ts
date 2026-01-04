@@ -29,14 +29,15 @@ export const resultController = async (
     const merchantCode = metaData.merchantCode;
     const managedOrderNo = dataContent.managedOrderNo || "";
     const managedOutTradeNo = dataContent.managedOutTradeNo || "";
-    const baseURL = dataContent.kpayApiUrl || CONFIG.API.BASE_URL;
+    const baseURL = metaData.kpayApiUrl || CONFIG.API.BASE_URL;
     const queryCheckoutOrderEndpoint =
-      dataContent.kpayApiQueryAllHostedCheckoutOrderEndpoint ||
+      metaData.kpayApiQueryAllHostedCheckoutOrderEndpoint ||
       CONFIG.API.ENDPOINTS.QUERY_ALL_HOSTED_CHECKOUT_ORDER;
     const queryPaymentOrderEndpoint =
-      dataContent.kpayApiQueryPaymentOrderEndpoint ||
+      metaData.kpayApiQueryPaymentOrderEndpoint ||
       CONFIG.API.ENDPOINTS.QUERY_PAYMENT_ORDER;
 
+    // Query order via KPay API
     const kpayQueryOrderService = new KPayService<
       QueryAllHostedCheckoutOrderRequest,
       QueryAllHostedCheckoutOrderResponse

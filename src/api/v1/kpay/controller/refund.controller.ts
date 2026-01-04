@@ -16,6 +16,7 @@ export const refundController = async (
   try {
     // Extract and validate request data
     validateRefundRequest(req.body);
+
     const dataContent = req.body.dataContent || {};
     const metaData = req.body.metaData || {};
     const language = metaData.language;
@@ -25,12 +26,12 @@ export const refundController = async (
     const oriOrderNo = dataContent.oriOrderNo || "";
     const refundAmount = dataContent.refundAmount || 0;
     const notifyUrl = dataContent.notifyUrl || null;
-
-    const baseURL = dataContent.kpayApiUrl || CONFIG.API.BASE_URL;
+    const baseURL = metaData.kpayApiUrl || CONFIG.API.BASE_URL;
     const paymentRefundEndpoint =
-      dataContent.kpayApiPaymentRefundEndpoint ||
+      metaData.kpayApiPaymentRefundEndpoint ||
       CONFIG.API.ENDPOINTS.PAYMENT_REFUND;
 
+    // Process refund via KPay API
     const kpayPaymentRefundService = new KPayService<
       PaymentRefundRequest,
       PaymentRefundResponse

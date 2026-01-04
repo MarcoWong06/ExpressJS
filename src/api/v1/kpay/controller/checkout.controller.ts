@@ -21,17 +21,15 @@ export const checkoutController = async (
     // Validate request body
     validateOrderRequest(req.body);
 
-    const dataContent = req.body.dataContent || {};
-    const metaData = req.body.metaData || {};
-
     // Create order request
+    const metaData = req.body.metaData || {};
     const orderRequest = createOrderRequestBody(req.body);
-    const baseURL = dataContent.kpayApiUrl || CONFIG.API.BASE_URL;
+    const baseURL = metaData.kpayApiUrl || CONFIG.API.BASE_URL;
     const createOrderEndpoint =
-      dataContent.kpayApiCreateAllHostedCheckoutOrderEndpoint ||
+      metaData.kpayApiCreateAllHostedCheckoutOrderEndpoint ||
       CONFIG.API.ENDPOINTS.CREATE_ALL_HOSTED_CHECKOUT_ORDER;
     const generateOrderEndpoint =
-      dataContent.kpayApiGenerateAllHostedCheckoutOrderEndpoint ||
+      metaData.kpayApiGenerateAllHostedCheckoutOrderEndpoint ||
       CONFIG.API.ENDPOINTS.GENERATE_ALL_HOSTED_CHECKOUT_ORDER;
     const language = metaData.language;
     const kpayApiKey = metaData.kpayApiKey;
