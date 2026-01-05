@@ -8,6 +8,7 @@ import {
 } from "../types/typeKpayPaymentRefund";
 import { validateRefundRequest } from "../middleware/validation.middleware";
 import { ValidationError } from "../middleware/error.middleware";
+import { Language } from "../types/typeKpayApi";
 
 export const refundController = async (
   req: Request<RefundRequest>,
@@ -19,7 +20,7 @@ export const refundController = async (
 
     const dataContent = req.body.dataContent || {};
     const metaData = req.body.metaData || {};
-    const language = metaData.language;
+    const language = metaData.language || Language.ZH_HK;
     const kpayApiKey = metaData.kpayApiKey;
     const merchantCode = metaData.merchantCode;
     const outTradeNo = `order_${Date.now()}`;
