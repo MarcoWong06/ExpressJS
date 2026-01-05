@@ -12,6 +12,7 @@ import {
   CreateAllHostedCheckoutOrderRequest,
   CreateAllHostedCheckoutOrderResponse,
 } from "../types/typeKpayCreateOrder";
+import { Language } from "../types/typeKpayApi";
 
 export const checkoutController = async (
   req: Request<OrderRequest>,
@@ -31,7 +32,7 @@ export const checkoutController = async (
     const generateOrderEndpoint =
       metaData.kpayApiGenerateAllHostedCheckoutOrderEndpoint ||
       CONFIG.API.ENDPOINTS.GENERATE_ALL_HOSTED_CHECKOUT_ORDER;
-    const language = metaData.language;
+    const language = metaData.language || Language.ZH_HK;
     const kpayApiKey = metaData.kpayApiKey;
     const merchantCode = metaData.merchantCode;
 

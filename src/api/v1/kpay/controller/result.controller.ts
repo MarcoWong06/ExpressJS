@@ -12,7 +12,7 @@ import {
   QueryPaymentOrderRequest,
   QueryPaymentOrderResponse,
 } from "../types/typeKpayQueryPayment";
-import { OrderState, Result } from "../types/typeKpayApi";
+import { Language, OrderState, Result } from "../types/typeKpayApi";
 
 export const resultController = async (
   req: Request<ResultRequest>,
@@ -24,7 +24,7 @@ export const resultController = async (
 
     const dataContent = req.body.dataContent || {};
     const metaData = req.body.metaData || {};
-    const language = metaData.language;
+    const language = metaData.language || Language.ZH_HK;
     const kpayApiKey = metaData.kpayApiKey;
     const merchantCode = metaData.merchantCode;
     const managedOrderNo = dataContent.managedOrderNo || "";
