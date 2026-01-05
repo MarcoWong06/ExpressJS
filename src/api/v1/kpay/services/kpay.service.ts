@@ -82,10 +82,15 @@ export class KPayService<
         throw error;
       }
 
-      if (isAxiosError(error) && error.response) {
+      if (isAxiosError(error)) {
+        if (error.response) {
+          throw new KPayApiError(
+            `API post request failed with status ${error.response.status}`,
+            error.response.status
+          );
+        }
         throw new KPayApiError(
-          `API post request failed with status ${error.response.status}`,
-          error.response.status
+          `Network error during API POST request: ${error.message}`
         );
       }
       throw new KPayApiError("Unknown error occurred during API POST request");
@@ -134,10 +139,15 @@ export class KPayService<
       if (error instanceof KPayApiError) {
         throw error;
       }
-      if (isAxiosError(error) && error.response) {
+      if (isAxiosError(error)) {
+        if (error.response) {
+          throw new KPayApiError(
+            `API get request failed with status ${error.response.status}`,
+            error.response.status
+          );
+        }
         throw new KPayApiError(
-          `API get request failed with status ${error.response.status}`,
-          error.response.status
+          `Network error during API GET request: ${error.message}`
         );
       }
       throw new KPayApiError("Unknown error occurred during API GET request");
