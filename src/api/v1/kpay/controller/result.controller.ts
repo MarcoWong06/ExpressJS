@@ -111,7 +111,7 @@ export const resultController = async (
           !response.data
         ) {
           throw new KPayApiError(
-            `Failed to create order: ${response.message} with code ${response.code}`,
+            `Failed to query payment order: ${response.message} with code ${response.code}`,
             undefined,
             response.code
           );
