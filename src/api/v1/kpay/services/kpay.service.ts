@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import { CONFIG } from "../config/constants";
 import { Language, type Headers } from "../types/typeKpayApi";
 import {
@@ -82,6 +82,12 @@ export class KPayService<
         throw error;
       }
 
+      if (isAxiosError(error) && error.response) {
+        throw new KPayApiError(
+          `API post request failed with status ${error.response.status}`,
+          error.response.status
+        );
+      }
       throw new KPayApiError("Unknown error occurred during API POST request");
     }
   }
@@ -128,6 +134,12 @@ export class KPayService<
       if (error instanceof KPayApiError) {
         throw error;
       }
+      if (isAxiosError(error) && error.response) {
+        throw new KPayApiError(
+          `API get request failed with status ${error.response.status}`,
+          error.response.status
+        );
+      }
       throw new KPayApiError("Unknown error occurred during API GET request");
     }
   }
@@ -143,13 +155,6 @@ export const createApiHeaders = (headers: Headers) => ({
 });
 
 const handleResponseError = (response: any) => {
-  if (response.status !== 200) {
-    throw new KPayApiError(
-      `API request failed with status code ${response.status}`,
-      response.status
-    );
-  }
-
   if (!response || !response.data) {
     throw new KPayApiError(
       "Invalid response from payment API - no data received",
