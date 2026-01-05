@@ -48,8 +48,10 @@ export const refundController = async (
           !CONFIG.API.SUCCESS_CODES.includes(response.code) ||
           !response.data
         ) {
-          throw new Error(
-            `Failed to process refund: ${response.message} with code ${response.code}`
+          throw new KPayApiError(
+            `Failed to process refund: ${response.message} with code ${response.code}`,
+            502,
+            response.code
           );
         }
         return response.data;
