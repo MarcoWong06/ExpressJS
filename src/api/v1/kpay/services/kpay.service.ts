@@ -160,7 +160,7 @@ const handleResponseError = (response: any) => {
   const { code, message } = response.data;
   if (!CONFIG.API.SUCCESS_CODES.includes(code)) {
     throw new KPayApiError(
-      `Failed to create order: ${message} with code ${code}`,
+      `API request failed: ${message} (code ${code})`,
       response.status,
       code
     );
