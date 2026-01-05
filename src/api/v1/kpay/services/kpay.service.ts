@@ -36,6 +36,25 @@ export class KPayService<
     this.timeout = timeout;
   }
 
+  private handleError(error: unknown, method: "POST" | "GET"): never {
+    if (error instanceof KPayApiError) {
+      throw error;
+    }
+
+    if (isAxiosError(error)) {
+      if (error.response) {
+        throw new KPayApiError(
+          `API ${method.toLowerCase()} request failed with status ${error.response.status}`,
+          error.response.status
+        );
+      }
+      throw new KPayApiError(
+        `Network error during API ${method} request: ${error.message}`
+      );
+    }
+    throw new KPayApiError(`Unknown error occurred during API ${method} request`);
+  }
+
   async post(
     requestBody: RequestType,
     merchantCode: string,
@@ -78,22 +97,7 @@ export class KPayService<
       handleResponseError(response);
       return response.data;
     } catch (error) {
-      if (error instanceof KPayApiError) {
-        throw error;
-      }
-
-      if (isAxiosError(error)) {
-        if (error.response) {
-          throw new KPayApiError(
-            `API post request failed with status ${error.response.status}`,
-            error.response.status
-          );
-        }
-        throw new KPayApiError(
-          `Network error during API POST request: ${error.message}`
-        );
-      }
-      throw new KPayApiError("Unknown error occurred during API POST request");
+      this.handleError(error, "POST");
     }
   }
 
@@ -136,21 +140,7 @@ export class KPayService<
       handleResponseError(response);
       return response.data;
     } catch (error) {
-      if (error instanceof KPayApiError) {
-        throw error;
-      }
-      if (isAxiosError(error)) {
-        if (error.response) {
-          throw new KPayApiError(
-            `API get request failed with status ${error.response.status}`,
-            error.response.status
-          );
-        }
-        throw new KPayApiError(
-          `Network error during API GET request: ${error.message}`
-        );
-      }
-      throw new KPayApiError("Unknown error occurred during API GET request");
+      this.handleError(error, "GET");
     }
   }
 }
