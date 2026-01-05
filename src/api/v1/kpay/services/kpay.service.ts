@@ -49,10 +49,10 @@ export class KPayService<
         );
       }
       throw new KPayApiError(
-        `Network error during API ${method} request: ${error.message}`
+        `Network error during API ${method.toLowerCase()} request: ${error.message}`
       );
     }
-    throw new KPayApiError(`Unknown error occurred during API ${method} request`);
+    throw new KPayApiError(`Unknown error occurred during API ${method.toLowerCase()} request`);
   }
 
   async post(
