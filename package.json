@@ -1,6 +1,6 @@
 {
   "name": "@cap-cws/express-kpay",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "description": "CWS Express - typescript express server for cap",
   "author": "Charles Ting",
   "main": "build/server.js",
@@ -11,13 +11,17 @@
   },
   "config": {
     "port": 3000,
-    "image": "cityray/cap-cws/kpay",
+    "image": "saashrplus/cap-cws-kpay",
     "dockerfile": "./dockerfiles/build.dockerfile"
   },
   "scripts": {
     "start": "cross-env PORT=${npm_package_config_port} CHOKIDAR_USEPOLLING=true CHOKIDAR_INTERVAL=1000 tsx watch src/server-index.ts",
     "test": "cross-env PORT=${npm_package_config_port} CHOKIDAR_USEPOLLING=true CHOKIDAR_INTERVAL=1000 tsx watch src/test-index.ts",
     "build": "npm-run-all clean esbuild",
+    "build:image": "docker buildx build --no-cache -t ${npm_package_config_image}:${npm_package_version} -f ${npm_package_config_dockerfile} --load .",
+    "save:image": "mkdir -p $(dirname ./releases/${npm_package_config_image}) && docker save -o ./releases/${npm_package_config_image}_${npm_package_version}.tar ${npm_package_config_image}:${npm_package_version}",
+    "load:image": "docker load -i ./releases/${npm_package_config_image}_${npm_package_version}.tar",
+    "push:image": "docker push ${npm_package_config_image}:${npm_package_version}",
     "clean": "rimraf build/*",
     "esbuild": "node ./config/esbuild.config.js",
     "typescript-check": "tsc --noEmit",
