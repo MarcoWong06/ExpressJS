@@ -3,7 +3,7 @@
 build/
 
 package-lock.json
-yarn.lock
 *.code-workspace
+!develop.code-workspace
 *.local.env
 *.local.yml
