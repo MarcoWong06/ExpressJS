@@ -1,31 +1,11 @@
-import axios from "axios";
-import type {
-  CreateAllHostedCheckoutOrderRequest,
-  CreateAllHostedCheckoutOrderResponse,
-} from "../types/typeKpayCreateOrder";
-import type {
-  QueryAllHostedCheckoutOrderRequest,
-  QueryAllHostedCheckoutOrderResponse,
-} from "../types/typeKpayQueryOrder";
+import axios, { isAxiosError } from "axios";
 import { CONFIG } from "../config/constants";
 import { Language, type Headers } from "../types/typeKpayApi";
-import {
-  QueryPaymentOrderRequest,
-  QueryPaymentOrderResponse,
-} from "../types/typeKpayQueryPayment";
 import {
   generateSignature,
   generateTimestampAndNonce,
 } from "../utils/crypto.utils";
-
-type Request =
-  | CreateAllHostedCheckoutOrderRequest
-  | QueryAllHostedCheckoutOrderRequest
-  | QueryPaymentOrderRequest;
-type Response =
-  | CreateAllHostedCheckoutOrderResponse
-  | QueryAllHostedCheckoutOrderResponse
-  | QueryPaymentOrderResponse;
+import { Request, Response } from "../types/typeKpayService";
 
 export class KPayApiError extends Error {
   constructor(
@@ -56,6 +36,25 @@ export class KPayService<
     this.timeout = timeout;
   }
 
+  private handleError(error: unknown, method: "POST" | "GET"): never {
+    if (error instanceof KPayApiError) {
+      throw error;
+    }
+
+    if (isAxiosError(error)) {
+      if (error.response) {
+        throw new KPayApiError(
+          `API ${method.toLowerCase()} request failed with status ${error.response.status}`,
+          error.response.status
+        );
+      }
+      throw new KPayApiError(
+        `Network error during API ${method.toLowerCase()} request: ${error.message}`
+      );
+    }
+    throw new KPayApiError(`Unknown error occurred during API ${method.toLowerCase()} request`);
+  }
+
   async post(
     requestBody: RequestType,
     merchantCode: string,
@@ -64,7 +63,6 @@ export class KPayService<
   ): Promise<ResponseType> {
     try {
       const requestUri = new URL(this.endPoints, this.baseURL);
-      requestUri.search = new URLSearchParams(requestBody as any).toString();
 
       // Generate signature for order query
       const { timestamp, nonceStr } = generateTimestampAndNonce();
@@ -99,11 +97,7 @@ export class KPayService<
       handleResponseError(response);
       return response.data;
     } catch (error) {
-      if (error instanceof KPayApiError) {
-        throw error;
-      }
-
-      throw new KPayApiError("Unknown error occurred during API POST request");
+      this.handleError(error, "POST");
     }
   }
 
@@ -146,10 +140,7 @@ export class KPayService<
       handleResponseError(response);
       return response.data;
     } catch (error) {
-      if (error instanceof KPayApiError) {
-        throw error;
-      }
-      throw new KPayApiError("Unknown error occurred during API GET request");
+      this.handleError(error, "GET");
     }
   }
 }
@@ -166,16 +157,17 @@ export const createApiHeaders = (headers: Headers) => ({
 const handleResponseError = (response: any) => {
   if (!response || !response.data) {
     throw new KPayApiError(
-      "Invalid response from payment API - no data received"
+      "Invalid response from payment API - no data received",
+      response.status
     );
   }
 
   const { code, message } = response.data;
   if (!CONFIG.API.SUCCESS_CODES.includes(code)) {
     throw new KPayApiError(
-        `Failed to create order: ${message} with code ${code}`,
-        undefined,
-        code
+      `API request failed: ${message} (code ${code})`,
+      response.status,
+      code
     );
   }
 };

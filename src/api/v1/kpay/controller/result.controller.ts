@@ -12,7 +12,7 @@ import {
   QueryPaymentOrderRequest,
   QueryPaymentOrderResponse,
 } from "../types/typeKpayQueryPayment";
-import { OrderState, Result } from "../types/typeKpayApi";
+import { Language, OrderState, Result } from "../types/typeKpayApi";
 
 export const resultController = async (
   req: Request<ResultRequest>,
@@ -24,19 +24,20 @@ export const resultController = async (
 
     const dataContent = req.body.dataContent || {};
     const metaData = req.body.metaData || {};
-    const language = metaData.language;
+    const language = metaData.language || Language.ZH_HK;
     const kpayApiKey = metaData.kpayApiKey;
     const merchantCode = metaData.merchantCode;
     const managedOrderNo = dataContent.managedOrderNo || "";
     const managedOutTradeNo = dataContent.managedOutTradeNo || "";
-    const baseURL = dataContent.kpayApiUrl ?? CONFIG.API.BASE_URL;
+    const baseURL = metaData.kpayApiUrl || CONFIG.API.BASE_URL;
     const queryCheckoutOrderEndpoint =
-      dataContent.kpayApiQueryAllHostedCheckoutOrderEndpoint ??
+      metaData.kpayApiQueryAllHostedCheckoutOrderEndpoint ||
       CONFIG.API.ENDPOINTS.QUERY_ALL_HOSTED_CHECKOUT_ORDER;
     const queryPaymentOrderEndpoint =
-      dataContent.kpayApiQueryPaymentOrderEndpoint ??
+      metaData.kpayApiQueryPaymentOrderEndpoint ||
       CONFIG.API.ENDPOINTS.QUERY_PAYMENT_ORDER;
 
+    // Query order via KPay API
     const kpayQueryOrderService = new KPayService<
       QueryAllHostedCheckoutOrderRequest,
       QueryAllHostedCheckoutOrderResponse
@@ -54,14 +55,13 @@ export const resultController = async (
           !response.data
         ) {
           throw new KPayApiError(
-            `Failed to create order: ${response.message} with code ${response.code}`,
+            `Failed to query order: ${response.message} with code ${response.code}`,
             undefined,
             response.code
           );
         }
         return response.data;
       });
-    console.log("Order Data:", orderData);
 
     const paymentOrderList = orderData.paymentOrderList || [];
     const paymentOrder = paymentOrderList.filter(
@@ -81,6 +81,7 @@ export const resultController = async (
           payAmount: orderData.payAmount,
           payCurrency: orderData.payCurrency,
           managedOrderState: orderData.managedOrderState,
+          paymentOrderList,
         },
         metaData: CONFIG.META_DATA,
       });
@@ -110,7 +111,7 @@ export const resultController = async (
           !response.data
         ) {
           throw new KPayApiError(
-            `Failed to create order: ${response.message} with code ${response.code}`,
+            `Failed to query payment order: ${response.message} with code ${response.code}`,
             undefined,
             response.code
           );
@@ -139,6 +140,7 @@ export const resultController = async (
         payAmount,
         payCurrency,
         managedOrderState,
+        paymentOrderList,
         outTradeNo,
         orderNo,
         transactionNo,

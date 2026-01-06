@@ -12,6 +12,7 @@ import {
   CreateAllHostedCheckoutOrderRequest,
   CreateAllHostedCheckoutOrderResponse,
 } from "../types/typeKpayCreateOrder";
+import { Language } from "../types/typeKpayApi";
 
 export const checkoutController = async (
   req: Request<OrderRequest>,
@@ -21,19 +22,17 @@ export const checkoutController = async (
     // Validate request body
     validateOrderRequest(req.body);
 
-    const dataContent = req.body.dataContent || {};
-    const metaData = req.body.metaData || {};
-
     // Create order request
+    const metaData = req.body.metaData || {};
     const orderRequest = createOrderRequestBody(req.body);
-    const baseURL = dataContent.kpayApiUrl ?? CONFIG.API.BASE_URL;
+    const baseURL = metaData.kpayApiUrl || CONFIG.API.BASE_URL;
     const createOrderEndpoint =
-      dataContent.kpayApiCreateAllHostedCheckoutOrderEndpoint ??
+      metaData.kpayApiCreateAllHostedCheckoutOrderEndpoint ||
       CONFIG.API.ENDPOINTS.CREATE_ALL_HOSTED_CHECKOUT_ORDER;
     const generateOrderEndpoint =
-      dataContent.kpayApiGenerateAllHostedCheckoutOrderEndpoint ??
+      metaData.kpayApiGenerateAllHostedCheckoutOrderEndpoint ||
       CONFIG.API.ENDPOINTS.GENERATE_ALL_HOSTED_CHECKOUT_ORDER;
-    const language = metaData.language;
+    const language = metaData.language || Language.ZH_HK;
     const kpayApiKey = metaData.kpayApiKey;
     const merchantCode = metaData.merchantCode;
 
@@ -128,13 +127,13 @@ export const checkoutController = async (
 const createOrderRequestBody = (
   body: OrderRequest
 ): CreateAllHostedCheckoutOrderRequest => ({
-  merchantIcon: body.metaData.merchantIcon || null,
+  merchantIcon: body.metaData?.merchantIcon || null,
   managedOutTradeNo: `order_${Date.now()}`,
   payAmount: body.dataContent.payAmount,
   payCurrency: CONFIG.DEFAULTS.CURRENCY,
   discountAmount: body.dataContent.discountAmount || null,
-  notifyUrl: body.metaData.notifyUrl || null,
-  returnUrl: body.metaData.returnUrl || null,
+  notifyUrl: body.metaData?.notifyUrl || null,
+  returnUrl: body.metaData?.returnUrl || null,
   orderRemark: body.dataContent.orderRemark || null,
   itemList: [
     {

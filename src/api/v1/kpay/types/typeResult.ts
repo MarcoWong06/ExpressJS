@@ -8,9 +8,10 @@ import {
   TransactionType,
   WalletType,
 } from "./typeKpayApi";
+import { PaymentOrderList } from "./typeKpayQueryOrder";
 
 export interface ResultRequestMetaData {
-  language: Language;
+  language?: Language;
   kpayApiUrl?: string;
   kpayApiKey: string;
   merchantCode: string;
@@ -45,6 +46,7 @@ export interface ResultResponseDataContent {
   result?: Result | undefined;
   reason?: string | undefined;
   orderState?: OrderState | undefined;
+  paymentOrderList?: PaymentOrderList[];
 }
 
 export interface ResultRequest
